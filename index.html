@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefeitura de Limeira/SP 2026 - Professor PEI & PEF | AppWeb Master</title>
+    
+    <!-- Configurações PWA e Ícone de Atalho -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b0f19">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Simulado Limeira">
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(() => console.log('PWA & Service Worker registrado com sucesso!'))
+            .catch((err) => console.log('Erro ao registrar Service Worker:', err));
+        });
+      }
+    </script>
+
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151c2e;
+            --border-color: #232f48;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --primary: #00f0ff;
+            --primary-dark: #008891;
+            --success: #39ff14;
+            --danger: #ff007f;
+            --warning: #ffe600;
+            --purple: #a855f7;
+        }
+
+        .light-theme {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --purple: #7c3aed;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .app-window {
+            width: 100%;
+            max-width: 980px;
+            background-color: var(--bg-card);
+            border-radius: 24px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .top-navbar {
+            background-color: var(--bg-card);
+            border-bottom: 2px solid var(--border-color);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .stat-item { display: flex; align-items: center; gap: 6px; }
+        .stat-xp { color: var(--success); }
+        .stat-gems { color: var(--primary); }
+        .stat-streak { color: var(--danger); }
+
+        .theme-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .theme-toggle-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .main-content {
+            padding: 24px;
+            min-height: 560px;
+            max-height: 78vh;
+            overflow-y: auto;
+        }
+
+        .btn-cyber {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-cyber:active { transform: translateY(2px); }
+
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; }
+        .btn-success { background: linear-gradient(135deg, var(--success), #22990a); color: #000; }
+        .btn-danger { background: linear-gradient(135deg, var(--danger), #99004d); color: #fff; }
+        .btn-purple { background: linear-gradient(135deg, var(--purple), #6d28d9); color: #fff; }
+        .btn-gray { background: var(--border-color); color: var(--text-muted); }
+
+        .screen-header { text-align: center; margin-bottom: 22px; }
+        .screen-header h2 {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 24px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .screen-header p { font-size: 13.5px; color: var(--text-muted); }
+
+        .cpf-box {
+            background: rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+        }
+        .light-theme .cpf-box { background: rgba(0,0,0,0.02); }
+
+        .cpf-box label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--success);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .cpf-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 15px;
+            color: var(--primary);
+            outline: none;
+            letter-spacing: 2px;
+        }
+
+        .blocks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .block-card {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .block-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0,240,255,0.15);
+        }
+
+        .block-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #000;
+            margin-bottom: 12px;
+        }
+
+        .block-card h3 {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 16px;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .block-card p { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+
+        .block-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* HUB DE ESTUDO */
+        .tab-menu { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tab-btn {
+            flex: 1;
+            min-width: 110px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+            background: var(--bg-main);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0,240,255,0.3);
+        }
+
+        .mindmap-box {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 13.5px;
+            line-height: 1.7;
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 240px;
+            margin: 14px 0;
+            cursor: pointer;
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
+
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        .flashcard-front { background: var(--bg-main); border-color: var(--primary); }
+        .flashcard-back { background: var(--bg-card); border-color: var(--success); color: var(--success); transform: rotateY(180deg); }
+
+        .quiz-progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: var(--bg-main);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            border: 1px solid var(--border-color);
+        }
+
+        .quiz-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 14px;
+        }
+
+        .question-tag {
+            display: inline-block;
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .option-item {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option-item:hover { border-color: var(--primary); }
+        .option-item.selected { border-color: var(--primary); background: rgba(0, 240, 255, 0.15); color: var(--primary); }
+        .option-item.correct { border-color: var(--success); background: rgba(57, 255, 20, 0.2); color: var(--success); }
+        .option-item.wrong { border-color: var(--danger); background: rgba(255, 0, 127, 0.2); color: var(--danger); }
+
+        .option-prefix {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 700;
+            font-size: 11.5px;
+            flex-shrink: 0;
+        }
+
+        .bottom-nav {
+            padding: 14px 24px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="app-window" id="app-window">
+
+    <div class="top-navbar">
+        <div class="stats-bar">
+            <div class="stat-item stat-streak"><i class="fa-solid fa-fire"></i> <span id="user-streak">1</span></div>
+            <div class="stat-item stat-gems"><i class="fa-solid fa-gem"></i> <span id="user-gems">100</span></div>
+            <div class="stat-item stat-xp"><i class="fa-solid fa-bolt"></i> <span id="user-xp">0 XP</span></div>
+        </div>
+        <button class="theme-toggle-btn" onclick="toggleTheme()">
+            <i class="fa-solid fa-moon" id="theme-icon"></i> <span id="theme-text">Dark</span>
+        </button>
+    </div>
+
+    <div class="main-content" id="main-content">
+
+        <!-- TELA 1: Home com os Blocos do Edital -->
+        <div id="screen-home">
+            <div class="screen-header">
+                <h2>Prefeitura de Limeira/SP 2026</h2>
+                <p>Processo Seletivo 01/2026 • Professor PEI & PEF (Master Edição AvançaSP)</p>
+            </div>
+
+            <!-- Identificação por CPF -->
+            <div class="cpf-box">
+                <label for="input-cpf"><i class="fa-solid fa-id-card"></i> DIGITE SEU CPF PARA LIBERAR O SIMULADO:</label>
+                <input type="text" id="input-cpf" class="cpf-input" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
+            </div>
+
+            <div class="blocks-grid">
+                <!-- Bloco 1 -->
+                <div class="block-card" onclick="openModuleHub(1)">
+                    <div>
+                        <div class="block-icon" style="background: var(--primary);">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <h3>Bloco 1: Língua Portuguesa</h3>
+                        <p>Compreensão, Textualidade, Coesão e Morfossintaxe com 10 questões comentadas.</p>
+                    </div>
+                    <span class="block-badge" style="background: rgba(0,240,255,0.15); color: var(--primary);">10 Questões Comentadas</span>
+                </div>
+
+                <!-- Bloco 2 -->
+                <div class="block-card" onclick="openModuleHub(2)">
+                    <div>
+                        <div class="block-icon" style="background: var(--success);">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <h3>Bloco 2: Matemática & Raciocínio Lógico</h3>
+                        <p>Aritmética, Proporções, Estatística e Lógica com 10 questões comentadas.</p>
+                    </div>
+                    <span class="block-badge" style="background: rgba(57,255,20,0.15); color: var(--success);">10 Questões Comentadas</span>
+                </div>
+
+                <!-- Bloco 3 -->
+                <div class="block-card" onclick="openModuleHub(3)">
+                    <div>
+                        <div class="block-icon" style="background: var(--warning);">
+                            <i class="fa-solid fa-gavel"></i>
+                        </div>
+                        <h3>Bloco 3: Legislação & Específicos</h3>
+                        <p>LDB (9.394/96), ECA, DCNs, BNCC e Autores com 20 questões comentadas.</p>
+                    </div>
+                    <span class="block-badge" style="background: rgba(255,230,0,0.15); color: var(--warning);">20 Questões Comentadas</span>
+                </div>
+
+                <!-- Bloco 4 e 5 -->
+                <div class="block-card" onclick="openModuleHub(4)" style="border-color: var(--purple);">
+                    <div>
+                        <div class="block-icon" style="background: var(--purple);">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3>Bloco 4 e 5: Mapas Mentais & Flashcards</h3>
+                        <p>Sub-blocos interativos com Mapas Mentais visuais, Flashcards de leis e resumos teóricos.</p>
+                    </div>
+                    <span class="block-badge" style="background: rgba(168,85,247,0.15); color: #d8b4fe;">Mapas & Flashcards de Leis</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TELA 2: Hub de Estudo -->
+        <div id="screen-hub" class="hidden">
+            <div class="screen-header">
+                <h2 id="hub-title">Título do Bloco</h2>
+                <p id="hub-subtitle">Material de Reforço com Mapas Mentais Visuais, Flashcards e Questões Comentadas</p>
+            </div>
+
+            <div class="tab-menu" id="hub-tab-menu">
+                <button class="tab-btn active" id="tab-btn-map" onclick="switchHubTab('map')">🧠 Mapa Mental</button>
+                <button class="tab-btn" id="tab-btn-cards" onclick="switchHubTab('cards')">🎴 Flashcards</button>
+                <button class="tab-btn" id="tab-btn-quiz" onclick="switchHubTab('quiz')">✏️ Questões Comentadas</button>
+            </div>
+
+            <!-- Aba Mapa Mental -->
+            <div id="hub-tab-map">
+                <div class="mindmap-box" id="map-content">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+
+            <!-- Aba Flashcards Interativos -->
+            <div id="hub-tab-cards" class="hidden">
+                <div class="flashcard-container" id="flashcard-box" onclick="flipCard()">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <span class="question-tag" id="card-tag">Card 1</span>
+                            <h3 style="font-size: 16px; margin-bottom: 8px;" id="card-question">Pergunta...</h3>
+                            <p style="font-size: 11.5px; color: var(--text-muted);">(Clique para girar 🔄)</p>
+                        </div>
+                        <div class="flashcard-back">
+                            <span class="question-tag" style="border-color: var(--success); color: var(--success);">Gabarito / Conceito</span>
+                            <p style="font-size: 14px; line-height: 1.5;" id="card-answer">Resposta...</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="btn-cyber btn-gray" onclick="prevCard()">← Anterior</button>
+                    <button class="btn-cyber btn-primary" onclick="nextCard()">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- Aba Quiz / Questões do Bloco -->
+            <div id="hub-tab-quiz" class="hidden">
+                <div class="quiz-progress-bar">
+                    <div class="quiz-progress-fill" id="quiz-progress"></div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span id="quiz-counter" style="font-weight: 700; color: var(--text-muted); font-size: 12.5px;">Questão 1 de 10</span>
+                    <span id="quiz-block-title" style="font-weight: 700; color: var(--primary); font-size: 12.5px;">Sub-bloco</span>
+                </div>
+
+                <div class="question-card">
+                    <span class="question-tag" id="quiz-topic">Sub-tópico</span>
+                    <div class="question-text" id="quiz-question-text">Carregando questão...</div>
+                </div>
+
+                <div class="options-list" id="quiz-options-container"></div>
+
+                <div id="quiz-feedback-box" class="hidden" style="margin-top: 14px; padding: 14px; border-radius: 12px; line-height: 1.5; font-size: 13px; font-weight: 600;"></div>
+            </div>
+        </div>
+
+        <!-- TELA 3: Tela de Resultado -->
+        <div id="screen-result" class="hidden">
+            <div class="screen-header">
+                <h2 style="color: var(--success);">Módulo Concluído! 🏆</h2>
+                <p id="res-cpf-tag" style="font-weight: 700; color: var(--primary); margin-top: 4px;"></p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 52px; font-weight: 900; color: var(--success); font-family: 'Chakra Petch', sans-serif;" id="res-score-pct">
+                    0%
+                </div>
+                <p id="res-score-details" style="font-weight: 600; color: var(--text-muted);">Você concluiu as questões comentadas deste bloco com sucesso!</p>
+            </div>
+
+            <div style="margin-top: 18px;">
+                <button class="btn-cyber btn-success" onclick="showHomeScreen()">🔄 Voltar ao Menu Principal</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <button class="btn-cyber btn-gray" onclick="showHomeScreen()">
+            <i class="fa-solid fa-house"></i> Início
+        </button>
+        <button class="btn-cyber btn-success hidden" id="btn-quiz-next" onclick="nextQuizStep()">
+            Verificar Resposta →
+        </button>
+    </div>
+</div>
+
+<script>
+    let userState = { streak: 1, gems: 100, xp: 0 };
+    let candidatoCPF = "";
+    let isDark = true;
+
+    let activeModuleHub = 1;
+    let cardIndex = 0;
+    let quizIndex = 0;
+    let quizScore = 0;
+    let answeredState = false;
+    let selectedOption = null;
+    let currentQuizPool = [];
+
+    function toggleTheme() {
+        isDark = !isDark;
+        const appWindow = document.getElementById('app-window');
+        const themeIcon = document.getElementById('theme-icon');
+        const themeText = document.getElementById('theme-text');
+
+        if (isDark) {
+            appWindow.classList.remove('light-theme');
+            themeIcon.className = "fa-solid fa-moon";
+            themeText.innerText = "Dark";
+        } else {
+            appWindow.classList.add('light-theme');
+            themeIcon.className = "fa-solid fa-sun";
+            themeText.innerText = "Light";
+        }
+    }
+
+    function mascaraCPF(input) {
+        let value = input.value.replace(/\D/g, "");
+        if (value.length > 11) value = value.slice(0, 11);
+        value = value.replace(/(\d{3})(\d)/, "$1.$2");
+        value = value.replace(/(\d{3})(\d)/, "$1.$2");
+        value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        input.value = value;
+    }
+
+    function validarCPF(cpf) {
+        cpf = cpf.replace(/[^\d]+/g, '');
+        if (cpf.length !== 11 || /^(\d){10}$/.test(cpf)) return false;
+        let soma = 0, resto;
+        for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpf.substring(9, 10))) return false;
+        soma = 0;
+        for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpf.substring(10, 11))) return false;
+        return true;
+    }
+
+    function addXP(amount) {
+        userState.xp += amount;
+        userState.gems += Math.floor(amount / 2);
+        document.getElementById('user-xp').innerText = userState.xp + " XP";
+        document.getElementById('user-gems').innerText = userState.gems;
+    }
+
+    const block1Questions = [
+        {
+            tag: "Língua Portuguesa - Compreensão",
+            text: "1. No que se refere à compreensão de textos na banca AvançaSP, a compreensão restringe-se a:",
+            options: ["A) Análise do que está explicitamente escrito no texto.", "B) Achismos subjetivos do leitor.", "C) Inferências abstratas sem suporte.", "D) Opinião pessoal do candidato.", "E) Extrapolação fantasiosa."],
+            correct: 0,
+            explanation: "Gabarito A: A compreensão lida com o dado explícito no texto, enquanto a interpretação abrange as inferências lógicas."
+        },
+        {
+            tag: "Língua Portuguesa - Coesão",
+            text: "2. Assinale a alternativa em que o conector introduz uma relação de oposição/adversidade:",
+            options: ["A) Estudou bastante; portanto, foi aprovado.", "B) O professor planejou a aula; contudo, os alunos participaram pouco.", "C) Fez sol o dia todo; logo, a temperatura despencou.", "D) Chegou cedo; por conseguinte, garantiu o melhor lugar.", "E) Estudo com dedicação a fim de que alcance o sucesso."],
+            correct: 1,
+            explanation: "Gabarito B: 'Contudo' é conjunção adversativa, indicando oposição ou quebra de expectativa."
+        },
+        {
+            tag: "Língua Portuguesa - Concordância",
+            text: "3. Assinale a alternativa correta quanto à concordância verbal (norma-padrão):",
+            options: ["A) Fazem muitos anos que o concurso foi aberto.", "B) Houveram diversos problemas na prova.", "C) Devem existir critérios claros de avaliação no edital.", "D) Faltou dez pontos para a aprovação.", "E) Tratam-se de questões complexas."],
+            correct: 2,
+            explanation: "Gabarito C: O verbo 'existir' é pessoal e concorda com o sujeito ('critérios claros')."
+        },
+        {
+            tag: "Língua Portuguesa - Regência",
+            text: "4. Quanto à regência verbal, assinale a alternativa em conformidade com a norma culta:",
+            options: ["A) O candidato assistiu o filme educacional.", "B) Visou o topo da lista de classificação.", "C) O professor aspirava a uma vaga de coordenação.", "D) Preferiu a rede municipal do que a privada.", "E) Informou os candidatos o local de prova."],
+            correct: 2,
+            explanation: "Gabarito C: 'Aspirar' no sentido de desejar rege a preposição 'a' (aspirava a uma vaga)."
+        },
+        {
+            tag: "Língua Portuguesa - Crase",
+            text: "5. Assinale a alternativa em que o acento indicativo de crase está correto:",
+            options: ["A) Os candidatos compareceram à sessão pontualmente às quatorze horas.", "B) A prefeitura enviou o comunicado à respeito do certame.", "C) O professor dedicou-se à ensinar matemática lúdica.", "D) Os candidatos dirigiram-se a uma sala reservada.", "E) Fomos a Limeira e voltamos da mesma forma."],
+            correct: 0,
+            explanation: "Gabarito A: Há crase pela união da preposição 'a' com o artigo 'a' e antes de horas exatas."
+        },
+        {
+            tag: "Língua Portuguesa - Morfologia",
+            text: "6. Na frase 'Os professores trabalharam muito', a palavra destacada classifica-se como:",
+            options: ["A) Pronome indefinido", "B) Adjetivo qualificativo", "C) Advérbio de intensidade", "D) Numeral cardinal", "E) Conjunção integrante"],
+            correct: 2,
+            explanation: "Gabarito C: 'Muito' modifica o verbo 'trabalharam' indicando intensidade (advérbio)."
+        },
+        {
+            tag: "Língua Portuguesa - Pontuação",
+            text: "7. Assinale a alternativa com pontuação correta segundo a sintaxe:",
+            options: ["A) O prefeito municipal, inaugurou ontem a escola.", "B) Os candidatos, que obtiveram nota superior, foram convocados.", "C) Aprovaram-se novas diretrizes para a rede.", "D) Estudou muito, contudo não obteve êxito.", "E) O professor entregou o material, aos alunos."],
+            correct: 1,
+            explanation: "Gabarito B: A oração adjetiva explicativa vem corretamente isolada por vírgulas."
+        },
+        {
+            tag: "Língua Portuguesa - Acentuação",
+            text: "8. Assinale a alternativa em que todas as palavras são proparoxítonas:",
+            options: ["A) Lâmpada, pêssego, plátano", "B) Café, parabéns, vêm", "C) Açúcar, órgão, fósforo", "D) País, constituí, saúda", "E) Espécie, túnel, fácil"],
+            correct: 0,
+            explanation: "Gabarito A: Lâmpada, pêssego e plátano possuem a antepenúltima sílaba tônica."
+        },
+        {
+            tag: "Língua Portuguesa - Colocação",
+            text: "9. Assinale a alternativa que obedece à colocação pronominal culta:",
+            options: ["A) Me disseram que o edital seria publicado hoje.", "B) Não confie-se em suposições infundadas.", "C) Os candidatos que inscreveram-se devem aguardar.", "D) Ninguém avisou-me sobre a alteração.", "E) Quando se apresentou o cronograma, todos aprovaram."],
+            correct: 4,
+            explanation: "Gabarito E: A conjunção 'Quando' atrai o pronome para perto de si (próclise obrigatória)."
+        },
+        {
+            tag: "Língua Portuguesa - Semântica",
+            text: "10. O sentido figurado, expressivo e metafórico de uma palavra denomina-se:",
+            options: ["A) Sentido denotativo", "B) Sentido conotativo", "C) Sinonímia absoluta", "D) Paronímia estrita", "E) Homonímia perfeita"],
+            correct: 1,
+            explanation: "Gabarito B: O sentido conotativo é o figurado, ao passo que o denotativo é o literal."
+        }
+    ];
+
+    const block2Questions = [
+        {
+            tag: "Matemática - Lógica Proposicional",
+            text: "11. A proposição equivalente a 'Se o candidato estuda, passa' é:",
+            options: ["A) Se não passa, não estuda.", "B) Se passa, estuda.", "C) Estuda e não passa.", "D) Não estuda ou passa.", "E) Se não estuda, não passa."],
+            correct: 0,
+            explanation: "Gabarito A: A contrapositiva da condicional inverte e nega ambas os termos (~Q -> ~P)."
+        },
+        {
+            tag: "Matemática - Negação Lógica",
+            text: "12. A negação da proposição 'A prova está fácil e todos passam' é:",
+            options: ["A) A prova não está fácil e todos não passam.", "B) A prova não está fácil ou nem todos passam.", "C) Se a prova não está fácil, ninguém passa.", "D) A prova está fácil ou todos passam.", "E) Se a prova está fácil, todos passam."],
+            correct: 1,
+            explanation: "Gabarito B: Pela Lei de Morgan, nega-se a 1ª, troca 'E' por 'OU' e nega-se a 2ª."
+        },
+        {
+            tag: "Matemática - MMC",
+            text: "13. Três ônibus passam em intervalos de 15, 20 e 30 minutos. Se passaram juntos às 8h, a próxima vez será às:",
+            options: ["A) 9h00", "B) 9h30", "C) 10h00", "D) 11h00", "E) 8h45"],
+            correct: 0,
+            explanation: "Gabarito A: O MMC(15, 20, 30) = 60 minutos (1 hora). 8h00 + 1h = 9h00."
+        },
+        {
+            tag: "Matemática - Porcentagem",
+            text: "14. Um curso de R$ 400,00 teve desconto de 15%. Qual o novo valor?",
+            options: ["A) R$ 320,00", "B) R$ 340,00", "C) R$ 350,00", "D) R$ 360,00", "E) R$ 380,00"],
+            correct: 1,
+            explanation: "Gabarito B: 15% de 400 = R$ 60,00 de desconto. 400 - 60 = R$ 340,00."
+        },
+        {
+            tag: "Matemática - Juros Simples",
+            text: "15. Aplicando R$ 2.000,00 a juros simples a 2% ao mês por 5 meses, o montante será:",
+            options: ["A) R$ 2.100,00", "B) R$ 2.200,00", "C) R$ 2.400,00", "D) R$ 2.500,00", "E) R$ 2.150,00"],
+            correct: 1,
+            explanation: "Gabarito B: J = 2000 × 0,02 × 5 = R$ 200,00. Montante = 2000 + 200 = R$ 2.200,00."
+        },
+        {
+            tag: "Matemática - Regra de Três",
+            text: "16. Se 4 pintores fazem um serviço em 6 dias, 3 pintores farão o mesmo serviço em:",
+            options: ["A) 8 dias", "B) 9 dias", "C) 10 dias", "D) 12 dias", "E) 7 dias"],
+            correct: 0,
+            explanation: "Gabarito A: Regra de três inversa (menos pintores, mais dias): 3X = 24 → X = 8 dias."
+        },
+        {
+            tag: "Matemática - Estatística",
+            text: "17. As notas em 5 simulados foram: 7,0; 8,5; 6,0; 9,0 e 7,5. A média aritmética é:",
+            options: ["A) 7,2", "B) 7,5", "C) 7,8", "D) 8,0", "E) 7,6"],
+            correct: 4,
+            explanation: "Gabarito E: Soma = 38,0. Dividindo por 5 = 7,6."
+        },
+        {
+            tag: "Matemática - Combinatória",
+            text: "18. De quantas maneiras 4 livros diferentes podem ser dispostos em fila?",
+            options: ["A) 12", "B) 16", "C) 24", "D) 32", "E) 48"],
+            correct: 2,
+            explanation: "Gabarito C: Permutação simples de 4 elementos: 4! = 24."
+        },
+        {
+            tag: "Matemática - Probabilidade",
+            text: "19. Em uma urna com 5 bolas vermelhas, 3 azuis e 2 verdes, tirando uma ao acaso, a chance de ser azul é:",
+            options: ["A) 30%", "B) 20%", "C) 25%", "D) 40%", "E) 35%"],
+            correct: 0,
+            explanation: "Gabarito A: Total = 10 bolas. Azuis = 3. Probabilidade = 3/10 = 30%."
+        },
+        {
+            tag: "Matemática - Geometria",
+            text: "20. Uma sala retangular com 8 metros de comprimento por 6 de largura possui área de:",
+            options: ["A) 28 m²", "B) 48 m²", "C) 56 m²", "D) 36 m²", "E) 64 m²"],
+            correct: 1,
+            explanation: "Gabarito B: Área = comprimento × largura = 8 × 6 = 48 m²."
+        }
+    ];
+
+    const block3Questions = [
+        {
+            tag: "Legislação - LDB Frequência",
+            text: "21. De acordo com o Art. 31 da LDB, o controle de frequência na pré-escola exige o mínimo de:",
+            options: ["A) 75%", "B) 60%", "C) 50%", "D) 80%", "E) 100%"],
+            correct: 1,
+            explanation: "Gabarito B: A pré-escola exige no mínimo 60% de frequência."
+        },
+        {
+            tag: "Legislação - LDB Educação Infantil",
+            text: "22. O Art. 29 da LDB estabelece que a Educação Infantil tem por finalidade o desenvolvimento integral da criança até:",
+            options: ["A) 6 anos de idade", "B) 5 anos de idade", "C) 4 anos de idade", "D) 7 anos de idade", "E) 3 anos de idade"],
+            correct: 1,
+            explanation: "Gabarito B: Até 5 anos de idade (aos 6 a criança ingressa no ensino fundamental)."
+        },
+        {
+            tag: "Legislação - ECA Artigo 56",
+            text: "23. Conforme o Art. 56 do ECA, os dirigentes escolares devem comunicar ao Conselho Tutelar:",
+            options: ["A) Apenas inadimplência de taxas escolares.", "B) Maus-tratos, faltas excessivas/evasão esgotados recursos e repetência elevada.", "C) Atrasos inferiores a 10 minutos.", "D) Dificuldades financeiras familiares.", "E) Insubordinação leve a regimento."],
+            correct: 1,
+            explanation: "Gabarito B: O rol do Art. 56 inclui obrigatoriamente maus-tratos, faltas/evasão e repetência."
+        },
+        {
+            tag: "Legislação - Constituição Federal",
+            text: "24. A educação básica obrigatória e gratuita garantida pela Constituição Federal abrange a faixa etária de:",
+            options: ["A) 0 a 17 anos", "B) 4 a 17 anos", "C) 6 a 14 anos", "D) 6 a 18 anos", "E) 0 a 6 anos"],
+            correct: 1,
+            explanation: "Gabarito B: Dos 4 aos 17 anos de idade (pré-escola, fundamental e médio)."
+        },
+        {
+            tag: "Pedagogia - Jean Piaget",
+            text: "25. O estágio do desenvolvimento em que surge a função simbólica e o egocentrismo (2 a 7 anos) é o:",
+            options: ["A) Sensório-motor", "B) Pré-operatório", "C) Operatório concreto", "D) Operatório formal", "E) Inteligência prática"],
+            correct: 1,
+            explanation: "Gabarito B: Estágio pré-operatório (2 a 7 anos), correspondente à Educação Infantil."
+        },
+        {
+            tag: "Pedagogia - Lev Vygotsky",
+            text: "26. A distância entre o que a criança faz sozinha e o que faz com mediação define a:",
+            options: ["A) Assimilação cognitiva", "B) Zona de Desenvolvimento Proximal (ZDP)", "C) Reação circular", "D) Estabilização operatória", "E) Inibição cortical"],
+            correct: 1,
+            explanation: "Gabarito B: ZDP é o conceito vygotskyano que mede o potencial de aprendizagem mediada."
+        },
+        {
+            tag: "Alfabetização - Magda Soares",
+            text: "27. A apropriação do sistema alfabético integrada às práticas sociais de leitura e escrita denomina-se:",
+            options: ["A) Alfabetizar letrando", "B) Cartilha mnemônica", "C) Decodificação fonológica pura", "D) Memorização silábica", "E) Ortografia normativa estrita"],
+            correct: 0,
+            explanation: "Gabarito A: 'Alfabetizar letrando' é a síntese da teoria de Magda Soares."
+        },
+        {
+            tag: "Alfabetização - Emília Ferreiro",
+            text: "28. Na psicogênese da escrita, quando a criança escreve uma letra para cada sílaba, ela está no nível:",
+            options: ["A) Pré-silábico", "B) Silábico", "C) Alfabético", "D) Operatório", "E) Garatuja"],
+            correct: 1,
+            explanation: "Gabarito B: Hipótese silábica (uma letra para cada sílaba falada)."
+        },
+        {
+            tag: "BNCC - Educação Infantil",
+            text: "29. Os eixos estruturantes das práticas pedagógicas na Educação Infantil segundo a BNCC são:",
+            options: ["A) Alfabetização e cálculo", "B) As interações e a brincadeira", "C) Treino motor e cópia", "D) Avaliação somativa e provas", "E) Cuidado assistencial sem teoria"],
+            correct: 1,
+            explanation: "Gabarito B: Interações e brincadeira são os dois eixos estruturantes da Educação Infantil na BNCC."
+        },
+        {
+            tag: "Avaliação Escolar",
+            text: "30. Para Cipriano Luckesi e Jussara Hoffmann, a avaliação escolar coerente com a emancipação deve ter caráter:",
+            options: ["A) Somativo e punitivo", "B) Classificatório e excludente", "C) Formativo, processual e diagnóstico", "D) Burocrático estático", "E) Seletivo por notas vermelhas"],
+            correct: 2,
+            explanation: "Gabarito C: A avaliação mediadora e formativa é diagnóstica, processual e visa o avanço do aluno."
+        },
+        {
+            tag: "LDB - Financiamento",
+            text: "31. Os Municípios devem aplicar anualmente na Manutenção e Desenvolvimento do Ensino (MDE) o mínimo de:",
+            options: ["A) 10%", "B) 18%", "C) 25%", "D) 30%", "E) 15%"],
+            correct: 2,
+            explanation: "Gabarito C: O Art. 212 da CF/88 e LDB estabelecem o mínimo de 25% para os Municípios."
+        },
+        {
+            tag: "Educação Especial",
+            text: "32. A Educação Especial na LDB é oferecida preferencialmente:",
+            options: ["A) Em escolas especiais segregadas", "B) Na rede regular de ensino", "C) Exclusivamente em clínicas terapêuticas", "D) Em cursos superiores de elite", "E) Em centros de reabilitação física"],
+            correct: 1,
+            explanation: "Gabarito B: O Art. 58 da LDB define que é oferecida preferencialmente na rede regular de ensino."
+        },
+        {
+            tag: "Henri Wallon",
+            text: "33. A Teoria da Pessoa Completa de Henri Wallon fundamenta-se nos campos funcionais de:",
+            options: ["A) Afetividade, Motricidade, Inteligência e Pessoa", "B) Assimilação e Acomodação", "C) ZDP e Mediação", "D) Estímulo e Resposta", "E) Inconsciente e Libido"],
+            correct: 0,
+            explanation: "Gabarito A: Wallon estuda a pessoa integrada através da afetividade, ato motor, inteligência e o eu."
+        },
+        {
+            tag: "DCNs Educação Básica",
+            text: "34. O Projeto Político-Pedagógico (PPP) deve ser concebido como:",
+            options: ["A) Documento burocrático imposto pela prefeitura", "B) A expressão da identidade da escola, construída coletivamente", "C) Manual exclusivo de punição discente", "D) Relatório financeiro de cantina", "E) Plano de aula individual facultativo"],
+            correct: 1,
+            explanation: "Gabarito B: O PPP é a identidade institucional construída coletivamente pela comunidade escolar."
+        },
+        {
+            tag: "Relações Étnico-Raciais",
+            text: "35. A Lei nº 11.645/2008 alterou a LDB para incluir obrigatoriamente no currículo escolar a temática:",
+            options: ["A) História e Cultura Afro-Brasileira e Indígena", "B) Mitologia greco-romana", "C) Economia mercantil europeia", "D) Línguas clássicas mortas", "E) Geografia física global"],
+            correct: 0,
+            explanation: "Gabarito A: Obrigatoriedade da história e cultura afro-brasileira e indígena em todo o currículo."
+        },
+        {
+            tag: "Ensino Fundamental 9 Anos",
+            text: "36. A principal finalidade da ampliação do Ensino Fundamental para 9 anos é:",
+            options: ["A) Antecipar exames vestibulares", "B) Garantir maior tempo de convívio escolar e oportunidades de aprendizagem desde os 6 anos", "C) Reduzir a carga horária anual", "D) Substituir a creche municipal", "E) Eliminar o lúdico"],
+            correct: 1,
+            explanation: "Gabarito B: Assegurar tempo mais longo de convívio e vivências sistemáticas desde os 6 anos."
+        },
+        {
+            tag: "Tendências Pedagógicas",
+            text: "37. Para Dermeval Saviani (Pedagogia Histórico-Crítica), o papel primordial da escola é:",
+            options: ["A) Socializar o saber elaborado acumulado historicamente", "B) Focar em recreação espontânea", "C) Adaptar alunos ao mercado corporativo", "D) Eliminar conteúdos científicos", "E) Promover elitismo acadêmico"],
+            correct: 0,
+            explanation: "Gabarito A: Socializar o saber elaborado para emancipar as classes populares."
+        },
+        {
+            tag: "Gestão Democrática",
+            text: "38. A gestão democrática no ensino público é efetivada na escola por meio de instâncias como:",
+            options: ["A) Conselhos Escolares, APMs e Grêmios Estudantis", "B) Centralização autoritária de ordens", "C) Terceirização mercantil de notas", "D) Exclusão de pais e funcionários", "E) Chefia policialesca"],
+            correct: 0,
+            explanation: "Gabarito A: Conselhos escolares e associações participativas garantem a gestão democrática."
+        },
+        {
+            tag: "Estatuto da Pessoa com Deficiência (LBI)",
+            text: "39. A Lei Brasileira de Inclusão (Lei nº 13.146/15) proíbe expressamente nas escolas privadas:",
+            options: ["A) A cobrança de valores adicionais nas mensalidades para adaptações e acessibilidade", "B) A matrícula de alunos com TEA", "C) A contratação de professores de AEE", "D) A adaptação de provas", "E) O uso de Libras"],
+            correct: 0,
+            explanation: "Gabarito A: É expressamente proibida a cobrança de taxas extras por adaptações em escolas privadas."
+        },
+        {
+            tag: "Deliberação CME Limeira",
+            text: "40. O Plano de Desenvolvimento Individual (PDI) para alunos da educação especial em Limeira é:",
+            options: ["A) Elaborado colaborativamente entre classe comum, AEE e família", "B) Feito por médicos externos sem a escola", "C) Preenchido pelo aluno no fim do ano", "D) Opcional e secreto", "E) Substituto da matrícula"],
+            correct: 0,
+            explanation: "Gabarito A: O PDI é instrumento de planejamento colaborativo entre professores da classe comum e AEE."
+        }
+    ];
+
+    const advancedHubData = {
+        1: {
+            title: "Bloco 1: Língua Portuguesa",
+            mindmap: `
+                <h4 style="color: var(--primary); margin-bottom: 10px;">🧠 Mapa Mental Integrativo (Língua Portuguesa)</h4>
+                <div style="background: rgba(0,240,255,0.1); padding: 10px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <strong>Eixos de Cobrança (AvançaSP):</strong><br>
+                    • <em>Compreensão vs Interpretação:</em> Texto explícito vs inferências lógicas.<br>
+                    • <em>Coesão Sequencial e Referencial:</em> Conectivos adversativos, causais, anáfora e catáfora.<br>
+                    • <em>Morfossintaxe:</em> Concordância verbal e nominal, regência, crase e colocação pronominal.
+                </div>
+            `,
+            cards: [
+                { q: "Qual a diferença entre compreensão e interpretação?", a: "Compreensão avalia o texto explícito; interpretação avalia o implícito e as inferências." },
+                { q: "O verbo 'aspirar' no sentido de desejar rege qual preposição?", a: "Transitivo indireto, rege a preposição 'a' (aspirava a uma vaga)." }
+            ],
+            quiz: block1Questions
+        },
+        2: {
+            title: "Bloco 2: Matemática & Raciocínio Lógico",
+            mindmap: `
+                <h4 style="color: var(--success); margin-bottom: 10px;">🧠 Mapa Mental Integrativo (Matemática & Lógica)</h4>
+                <div style="background: rgba(57,255,20,0.1); padding: 10px; border-radius: 8px; border-left: 4px solid var(--success);">
+                    <strong>Eixos de Cobrança (AvançaSP):</strong><br>
+                    • <em>Aritmética:</em> MMC, MDC, frações e porcentagem.<br>
+                    • <em>Proporcionalidade:</em> Regra de três simples e composta, juros simples e compostos.<br>
+                    • <i>Lógica:</i> Tabela verdade da condicional, equivalência (contrapositiva) e Leis de Morgan.
+                </div>
+            `,
+            cards: [
+                { q: "Como calcular a equivalência lógica da condicional (P -> Q)?", a: "Por contrapositiva: Inverte e nega ambas (~Q -> ~P)." },
+                { q: "Qual o MMC entre 15, 20 e 30?", a: "60." }
+            ],
+            quiz: block2Questions
+        },
+        3: {
+            title: "Bloco 3: Legislação Educacional & Específicos",
+            mindmap: `
+                <h4 style="color: var(--warning); margin-bottom: 10px;">🧠 Mapa Mental Integrativo (Legislação & Específicos)</h4>
+                <div style="background: rgba(255,230,0,0.1); padding: 10px; border-radius: 8px; border-left: 4px solid var(--warning);">
+                    <strong>Eixos de Cobrança (AvançaSP):</strong><br>
+                    • <em>LDB (9.394/96):</em> Freq. pré-escola (60%), Fundamental (75%), idades e deveres.<br>
+                    • <em>ECA (8.069/90):</em> Art. 56 (notificação ao Conselho Tutelar) e direitos.<br>
+                    • <em>Teorias & Autores:</em> Piaget (estágios), Vygotsky (ZDP), Magda Soares (letramento).
+                </div>
+            `,
+            cards: [
+                { q: "Qual a frequência mínima exigida na pré-escola?", a: "60% do total de horas letivas (Art. 31, IV da LDB)." },
+                { q: "Quando o dirigente escolar deve acionar o Conselho Tutelar (Art. 56 do ECA)?", a: "Maus-tratos, faltas excessivas/evasão e repetência elevada." }
+            ],
+            quiz: block3Questions
+        },
+        4: {
+            title: "Bloco 4 e 5: Mapas Mentais & Flashcards",
+            mindmap: `
+                <h4 style="color: var(--purple); margin-bottom: 10px;">🧠 Mapa Mental Integrativo (Leis & Teorias)</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="background: rgba(168,85,247,0.1); padding: 10px; border-radius: 8px; border-left: 4px solid var(--purple);">
+                        <strong>1. Resumos de Leis (LDB, ECA & Diretrizes):</strong><br>
+                        • <em>LDB (Lei 9.394/96):</em> Art. 24 (800h / 200 dias), Art. 29/31 (Ed. Infantil), Art. 58 (Ed. Especial).<br>
+                        • <em>ECA (Lei 8.069/90):</em> Art. 53 (Direito à educação) e Art. 56 (Obrigatoriedade de notificação ao Conselho Tutelar).
+                    </div>
+                </div>
+            `,
+            cards: [
+                { q: "Qual a frequência mínima na pré-escola e no ensino fundamental?", a: "Pré-escola: 60%. Ensino Fundamental: 75%." },
+                { q: "O que estabelece o Art. 56 do ECA?", a: "Dever de comunicar ao Conselho Tutelar maus-tratos, faltas excessivas/evasão e repetência." }
+            ],
+            quiz: block3Questions.slice(0, 10)
+        }
+    };
+
+    function hideAllScreens() {
+        document.getElementById('screen-home').classList.add('hidden');
+        document.getElementById('screen-hub').classList.add('hidden');
+        document.getElementById('screen-result').classList.add('hidden');
+        document.getElementById('btn-quiz-next').classList.add('hidden');
+    }
+
+    function showHomeScreen() {
+        hideAllScreens();
+        document.getElementById('screen-home').classList.remove('hidden');
+    }
+
+    function openModuleHub(modNum) {
+        const cpfVal = document.getElementById('input-cpf').value.trim();
+        if (!validarCPF(cpfVal)) {
+            alert("⚠️ Digite um CPF válido para liberar o simulado!");
+            return;
+        }
+        candidatoCPF = cpfVal;
+        activeModuleHub = modNum;
+
+        hideAllScreens();
+        document.getElementById('screen-hub').classList.remove('hidden');
+
+        const data = advancedHubData[modNum];
+        document.getElementById('hub-title').innerText = data.title;
+        document.getElementById('hub-subtitle').innerText = "Material de Reforço com Mapas Mentais Visuais, Flashcards e Questões Comentadas";
+        document.getElementById('map-content').innerHTML = data.mindmap;
+        document.getElementById('hub-tab-menu').style.display = 'flex';
+
+        cardIndex = 0;
+        renderCard();
+        switchHubTab('map');
+    }
+
+    function switchHubTab(tab) {
+        document.getElementById('hub-tab-map').classList.add('hidden');
+        document.getElementById('hub-tab-cards').classList.add('hidden');
+        document.getElementById('hub-tab-quiz').classList.add('hidden');
+        document.getElementById('btn-quiz-next').classList.add('hidden');
+
+        document.getElementById('tab-btn-map').classList.remove('active');
+        document.getElementById('tab-btn-cards').classList.remove('active');
+        document.getElementById('tab-btn-quiz').classList.remove('active');
+
+        if (tab === 'map') {
+            document.getElementById('hub-tab-map').classList.remove('hidden');
+            document.getElementById('tab-btn-map').classList.add('active');
+        } else if (tab === 'cards') {
+            document.getElementById('hub-tab-cards').classList.remove('hidden');
+            document.getElementById('tab-btn-cards').classList.add('active');
+        } else if (tab === 'quiz') {
+            document.getElementById('hub-tab-quiz').classList.remove('hidden');
+            document.getElementById('tab-btn-quiz').classList.add('active');
+            document.getElementById('btn-quiz-next').classList.remove('hidden');
+            quizIndex = 0;
+            quizScore = 0;
+            currentQuizPool = advancedHubData[activeModuleHub].quiz;
+            loadHubQuiz();
+        }
+    }
+
+    function renderCard() {
+        const cards = advancedHubData[activeModuleHub].cards;
+        const c = cards[cardIndex];
+        document.getElementById('card-tag').innerText = `Card ${cardIndex + 1} de ${cards.length}`;
+        document.getElementById('card-question').innerText = c.q;
+        document.getElementById('card-answer').innerText = c.a;
+        document.getElementById('flashcard-box').classList.remove('flipped');
+    }
+
+    function flipCard() {
+        document.getElementById('flashcard-box').classList.toggle('flipped');
+    }
+
+    function nextCard() {
+        const cards = advancedHubData[activeModuleHub].cards;
+        if (cardIndex < cards.length - 1) {
+            cardIndex++;
+            renderCard();
+        }
+    }
+
+    function prevCard() {
+        if (cardIndex > 0) {
+            cardIndex--;
+            renderCard();
+        }
+    }
+
+    function loadHubQuiz() {
+        answeredState = false;
+        selectedOption = null;
+        const q = currentQuizPool[quizIndex];
+        const pct = (quizIndex / currentQuizPool.length) * 100;
+
+        document.getElementById('quiz-progress').style.width = pct + '%';
+        document.getElementById('quiz-counter').innerText = `Questão ${quizIndex + 1} de ${currentQuizPool.length}`;
+        document.getElementById('quiz-block-title').innerText = advancedHubData[activeModuleHub].title;
+        document.getElementById('quiz-topic').innerText = q.tag;
+        document.getElementById('quiz-question-text').innerText = q.text;
+
+        const container = document.getElementById('quiz-options-container');
+        container.innerHTML = '';
+
+        q.options.forEach((optText, idx) => {
+            const prefix = optText.substring(0, 2);
+            const content = optText.substring(3);
+            const div = document.createElement('div');
+            div.className = 'option-item';
+            div.onclick = () => selectHubOption(idx);
+            div.innerHTML = `<div class="option-prefix">${prefix}</div><div>${content}</div>`;
+            container.appendChild(div);
+        });
+
+        document.getElementById('quiz-feedback-box').className = 'hidden';
+        const nextBtn = document.getElementById('btn-quiz-next');
+        nextBtn.innerText = "Verificar Resposta →";
+        nextBtn.className = "btn-cyber btn-success";
+    }
+
+    function selectHubOption(idx) {
+        if (answeredState) return;
+        selectedOption = idx;
+        const items = document.querySelectorAll('.option-item');
+        items.forEach((item, i) => {
+            if (i === idx) item.classList.add('selected');
+            else item.classList.remove('selected');
+        });
+    }
+
+    function nextQuizStep() {
+        const nextBtn = document.getElementById('btn-quiz-next');
+        const q = currentQuizPool[quizIndex];
+        const feedbackBox = document.getElementById('quiz-feedback-box');
+
+        if (!answeredState) {
+            if (selectedOption === null) {
+                alert("Selecione uma alternativa!");
+                return;
+            }
+            answeredState = true;
+
+            const items = document.querySelectorAll('.option-item');
+            items.forEach((item, i) => {
+                item.style.pointerEvents = 'none';
+                if (i === q.correct) item.classList.add('correct');
+                else if (i === selectedOption) item.classList.add('wrong');
+            });
+
+            feedbackBox.classList.remove('hidden');
+            if (selectedOption === q.correct) {
+                quizScore++;
+                addXP(15);
+                feedbackBox.style.backgroundColor = 'rgba(57, 255, 20, 0.15)';
+                feedbackBox.style.color = 'var(--success)';
+                feedbackBox.style.border = '1px solid var(--success)';
+                feedbackBox.innerHTML = `<strong>✨ Resposta Correta!</strong><br>${q.explanation}`;
+            } else {
+                feedbackBox.style.backgroundColor = 'rgba(255, 0, 127, 0.15)';
+                feedbackBox.style.color = 'var(--danger)';
+                feedbackBox.style.border = '1px solid var(--danger)';
+                feedbackBox.innerHTML = `<strong>❌ Resposta Incorreta.</strong><br>${q.explanation}`;
+            }
+
+            if (quizIndex === currentQuizPool.length - 1) {
+                nextBtn.innerText = "Concluir Módulo 🏆";
+                nextBtn.className = "btn-cyber btn-danger";
+            } else {
+                nextBtn.innerText = "Próxima Questão →";
+                nextBtn.className = "btn-cyber btn-primary";
+            }
+        } else {
+            if (quizIndex < currentQuizPool.length - 1) {
+                quizIndex++;
+                loadHubQuiz();
+            } else {
+                finishHubQuiz();
+            }
+        }
+    }
+
+    function finishHubQuiz() {
+        hideAllScreens();
+        document.getElementById('screen-result').classList.remove('hidden');
+        const total = currentQuizPool.length;
+        const pct = Math.round((quizScore / total) * 100);
+
+        document.getElementById('res-cpf-tag').innerText = `Titular: CPF ${candidatoCPF}`;
+        document.getElementById('res-score-pct').innerText = `${pct}%`;
+        document.getElementById('res-score-details').innerText = `Você acertou ${quizScore} de ${total} questões de reforço (${pct}% de acertos)!`;
+    }
+</script>
+
+</body>
+</html>
